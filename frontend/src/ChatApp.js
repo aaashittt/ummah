@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import './chatApp.css';
 
-const backendUrl = 'https://your-backend-url.onrender.com'; // Replace with your actual URL
+const backendUrl = 'https://ummah2.onrender.com';
 
-function ChatApp() {
+  function ChatApp() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
@@ -37,7 +37,7 @@ function ChatApp() {
 
   return (
     <div className="chat-container">
-      <h1>Ummah AI Chat</h1>
+      <h1>MyUmmah AI Chat</h1>
       <div id="chat-window">
         {messages.map((msg, idx) => (
           <div key={idx} className={msg.sender === 'user' ? 'user-message' : 'bot-message'}>
