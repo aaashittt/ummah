@@ -1,6 +1,6 @@
-// ChatApp.js
 import React, { useState, useEffect } from 'react';
 import './chatApp.css';
+
 const backendUrl = 'https://ummah2.onrender.com';
 
 function ChatApp({ chatId }) {
@@ -37,7 +37,7 @@ function ChatApp({ chatId }) {
       const response = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ message: input }),
       });
 
       const data = await response.json();
