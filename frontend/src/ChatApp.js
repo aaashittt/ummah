@@ -1,7 +1,7 @@
- import './chatApp.css';
+
 // ChatApp.js
 import React, { useState } from 'react';
-import './ChatApp.css';
+import './chatApp.css';
 
 const backendUrl = 'https://your-backend-url.onrender.com'; // Replace with your actual URL
 
