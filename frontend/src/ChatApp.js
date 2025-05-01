@@ -3,7 +3,7 @@ import "./chatApp.css";
 import React, { useState } from "react";
 import "./ChatApp.css"; // Optional: move your styles here
 
-const backendUrl = "https://your-render-app.onrender.com"; // UPDATE THIS AFTER DEPLOYMENT
+const backendUrl = "https://ummah2.onrender.com"; // UPDATE THIS AFTER DEPLOYMENT
 
 const ChatApp = () => {
   const [input, setInput] = useState("");
