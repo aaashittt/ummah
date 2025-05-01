@@ -2,11 +2,15 @@ services:
   - type: web
     name: my-chatgpt-backend
     runtime: node
-    buildCommand: yarn install
+    buildCommand: |
+      cd frontend
+      npm install
+      npm run build
+      cd ..
+      yarn install
     startCommand: node server.js
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: OPENROUTER_API_KEY
         fromSecret: OPENROUTER_API_KEY
-      # (omit PORT here)
+      - key: NODE_ENV
+        value: production

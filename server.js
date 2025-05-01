@@ -123,6 +123,18 @@ app.use((err, req, res, next) => {
   });
 });
 
+import path from 'path';
+const __dirname = path.resolve();
+
+// Serve all files from frontend/build
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
+// For any other route, send back index.html so React Router (if you have it) works
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
+});
+
+
 // 🏁 Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port: ${PORT}`);
