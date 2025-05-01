@@ -1,12 +1,12 @@
-// src/index.js
-import React from "react";
-import ReactDOM from "react-dom/client";
-import ChatApp from "./ChatApp";
-import "./index.css";
+// --------- src/index.js ---------
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import './chatApp.css';
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
-    <ChatApp />
-  </React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
 );
