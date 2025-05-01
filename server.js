@@ -15,7 +15,8 @@ dns.setDefaultResultOrder('ipv4first');
 const dnsAgent = new Agent({ 
   family: 4,
   keepAlive: true,
-  rejectUnauthorized: true
+  rejectUnauthorized: true,
+  servername: 'api.openrouter.ai' // Critical SSL fix
 });
 
 let OPENROUTER_IP = '172.67.74.72'; // Fallback IP
@@ -78,7 +79,7 @@ app.use(express.json({
 // ================
 app.get('/health', async (req, res) => {
   try {
-    const response = await fetch(`http://${OPENROUTER_IP}`, {
+    const response = await fetch(`https://${OPENROUTER_IP}`, { // Changed to HTTPS
       method: 'HEAD',
       agent: dnsAgent,
       headers: { 'Host': OPENROUTER_HOST }
@@ -106,7 +107,7 @@ app.post('/ask', async (req, res) => {
       return res.status(400).json({ error: "Question field is required" });
     }
 
-    const response = await fetch(`http://${OPENROUTER_IP}/v1/chat/completions`, {
+    const response = await fetch(`https://${OPENROUTER_IP}/v1/chat/completions`, { // Changed to HTTPS
       agent: dnsAgent,
       method: 'POST',
       signal: controller.signal,
