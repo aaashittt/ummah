@@ -4,17 +4,26 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 
+// Environment configuration
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enhanced security middleware
+// Rate limiting configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100,
+  message: 'Too many requests from this IP, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 // Middleware setup
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(limiter);
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5500',
@@ -22,7 +31,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
-// Enhanced JSON parsing with error handling
 app.use(express.json({
   verify: (req, res, buf) => {
     try {
@@ -34,18 +42,16 @@ app.use(express.json({
   }
 }));
 
-// Pre-flight requests
+// Pre-flight handling
 app.options('/ask', cors());
 
-// API Endpoint with improved error handling
+// Main API endpoint
 app.post('/ask', async (req, res) => {
   try {
-    // Validate request body
-    if (!req.body?.question) {
+    if (!req.body?.question?.trim()) {
       return res.status(400).json({ error: "Question field is required" });
     }
 
-    // OpenRouter API call
     const response = await fetch("https://api.openrouter.ai/v1/chat/completions", {
       method: 'POST',
       headers: {
@@ -56,58 +62,55 @@ app.post('/ask', async (req, res) => {
       },
       body: JSON.stringify({
         model: "mistralai/mistral-7b-instruct",
-        messages: [{ role: "user", content: req.body.question }],
+        messages: [{ role: "user", content: req.body.question.trim() }],
         temperature: 0.7
       })
     });
 
-    // Handle OpenRouter API errors
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OpenRouter API Error:', errorData);
-      return res.status(response.status).json({ 
-        error: errorData.error?.message || 'AI service error' 
+      console.error('OpenRouter Error:', errorData);
+      return res.status(response.status).json({
+        error: errorData.error?.message || 'AI service unavailable'
       });
     }
 
     const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content;
     
-    if (data.choices?.[0]?.message?.content) {
-      res.json({ answer: data.choices[0].message.content });
-    } else {
-      console.error("Unexpected API Response:", data);
-      res.status(500).json({ error: "AI service returned unexpected format" });
+    if (answer) {
+      return res.json({ answer });
     }
+    
+    console.error("Unexpected Response Format:", data);
+    res.status(500).json({ error: "AI service returned unexpected response" });
   } catch (error) {
     console.error("Server Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global Error:', err.stack);
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message
+  });
 });
 
-// Enhanced error handling
-app.use((err, req, res, next) => {
-  console.error('Global Error Handler:', err.stack);
-  res.status(500).json({ 
-    error: process.env.NODE_ENV === 'development' 
-      ? err.message 
-      : 'Something went wrong!' 
-  });
+// Server initialization
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+  Server running on port: ${PORT}
+  CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:5500'}
+  Environment: ${process.env.NODE_ENV || 'development'}
+  `);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\nServer shutting down...');
-  process.exit();
-});
-
-// Critical fix: Added '0.0.0.0' for Render compatibility
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:5500'}`);
+  console.log('\n🛑 Server shutting down gracefully...');
+  process.exit(0);
 });
