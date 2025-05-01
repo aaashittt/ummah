@@ -1,82 +1,63 @@
-import "./chatApp.css";
-// src/ChatApp.js
-import React, { useState } from "react";
-import "./ChatApp.css"; // Optional: move your styles here
+// ChatApp.js
+import React, { useState } from 'react';
+import './ChatApp.css';
 
-const backendUrl = "https://ummah2.onrender.com"; // UPDATE THIS AFTER DEPLOYMENT
+const backendUrl = 'https://your-backend-url.onrender.com'; // Replace with your actual URL
 
-const ChatApp = () => {
-  const [input, setInput] = useState("");
+function ChatApp() {
   const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [error, setError] = useState('');
 
   const sendMessage = async () => {
-    const userText = input.trim();
-    if (!userText) return;
+    if (!input.trim()) return;
 
-    // Add user message and placeholder bot message
-    const userMessage = { sender: "user", text: `You: ${userText}` };
-    const botPlaceholder = { sender: "bot", text: "Bot: Thinking..." };
+    const userMessage = { text: input, sender: 'user' };
+    const botMessage = { text: 'Thinking...', sender: 'bot' };
 
-    const updatedMessages = [...messages, userMessage, botPlaceholder];
-    setMessages(updatedMessages);
-    setInput("");
+    setMessages(prev => [...prev, userMessage, botMessage]);
+    setInput('');
+    setError('');
 
     try {
-      const response = await fetch(`${backendUrl}/ask`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userText }),
+      const res = await fetch(`${backendUrl}/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: input })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const botResponse = {
-        sender: "bot",
-        text: `Bot: ${data.answer || "No response received"}`,
-      };
-
-      // Replace the placeholder with actual bot response
-      const newMessages = [...messages, userMessage, botResponse];
-      setMessages(newMessages);
-    } catch (error) {
-      const errorMsg = {
-        sender: "bot",
-        text: "Bot: Service unavailable. Please try later.",
-      };
-      const newMessages = [...messages, userMessage, errorMsg];
-      setMessages(newMessages);
-      console.error("Fetch Error:", error);
+      const data = await res.json();
+      const updatedMessages = [...messages, userMessage, { text: `Bot: ${data.answer || "No response"}`, sender: 'bot' }];
+      setMessages(updatedMessages);
+    } catch (err) {
+      setError('Bot: Service unavailable. Please try later.');
     }
   };
 
   return (
-    <div>
-      <h1>Chat with AI</h1>
+    <div className="chat-container">
+      <h1>Ummah AI Chat</h1>
       <div id="chat-window">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={msg.sender === "user" ? "user-message" : "bot-message"}
-          >
-            {msg.text}
+        {messages.map((msg, idx) => (
+          <div key={idx} className={msg.sender === 'user' ? 'user-message' : 'bot-message'}>
+            {msg.sender === 'user' ? `You: ${msg.text}` : msg.text}
           </div>
         ))}
       </div>
-      <input
-        id="question-input"
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type your question..."
-      />
-      <button id="send-button" onClick={sendMessage}>
-        Send
-      </button>
+
+      <div className="input-group">
+        <input
+          id="question-input"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Type your question..."
+        />
+        <button id="send-button" onClick={sendMessage}>Send</button>
+      </div>
+
+      {error && <div id="error-message">{error}</div>}
     </div>
   );
-};
+}
 
 export default ChatApp;
