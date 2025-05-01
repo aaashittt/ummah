@@ -1,19 +1,23 @@
-// ThemeToggle.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-function ThemeToggle() {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+export default function ThemeToggle() {
+  const [theme, setTheme] = useState(
+    localStorage.getItem('theme') || 'light'
+  );
 
+  // on theme change, update <body> class & persist
   useEffect(() => {
-    document.body.className = darkMode ? 'dark-mode' : 'light-mode';
-    localStorage.setItem('darkMode', darkMode);
-  }, [darkMode]);
+    document.body.classList.remove('light-mode', 'dark-mode');
+    document.body.classList.add(theme + '-mode');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   return (
-    <button onClick={() => setDarkMode(!darkMode)} className="theme-toggle">
-      {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+    <button
+      className="theme-toggle"
+      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+    >
+      {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
     </button>
   );
 }
-
-export default ThemeToggle;
