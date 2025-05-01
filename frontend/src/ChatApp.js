@@ -1,83 +1,63 @@
+// ChatApp.js
 import React, { useState, useEffect } from 'react';
-import './chatApp.css';
 
 const backendUrl = 'https://ummah2.onrender.com';
 
-function ChatApp() {
-  const [messages, setMessages] = useState(() => {
-    const stored = localStorage.getItem('chatMessages');
-    return stored ? JSON.parse(stored) : [];
-  });
+function ChatApp({ chatId }) {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
-  }, [messages]);
+    const storedHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    const current = storedHistory.find(chat => chat.id === chatId);
+    if (current) setMessages(current.messages);
+  }, [chatId]);
+
+  const saveToHistory = (newMessages) => {
+    const heading = newMessages[0]?.text?.slice(0, 20) || 'Chat';
+    let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    const index = history.findIndex(chat => chat.id === chatId);
+
+    if (index >= 0) {
+      history[index] = { id: chatId, heading, messages: newMessages };
+    } else {
+      history.push({ id: chatId || Date.now().toString(), heading, messages: newMessages });
+    }
+
+    localStorage.setItem('chatHistory', JSON.stringify(history));
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
-    const userMessage = { sender: 'user', text: input };
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, { from: 'user', text: input }];
+    setMessages(newMessages);
     setInput('');
-    setLoading(true);
 
     try {
-      const response = await fetch(`${backendUrl}/ask`, {
+      const response = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: input })
+        body: JSON.stringify({ message: input })
       });
 
       const data = await response.json();
-      const botReply = { sender: 'bot', text: data.answer || 'No response received.' };
-      setMessages(prev => [...prev, botReply]);
-    } catch (error) {
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Service unavailable. Please try later.' }]);
-      console.error(error);
-    } finally {
-      setLoading(false);
+      const updatedMessages = [...newMessages, { from: 'bot', text: data.reply || 'Error' }];
+      setMessages(updatedMessages);
+      saveToHistory(updatedMessages);
+    } catch {
+      setMessages([...newMessages, { from: 'bot', text: 'Service unavailable. Please try again later.' }]);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') sendMessage();
-  };
-
   return (
-    <div className={`chat-container ${darkMode ? 'dark' : ''}`}>
-      <header>
-        <h1>Chat with AI</h1>
-        <button onClick={() => setDarkMode(!darkMode)} className="toggle-mode">
-          {darkMode ? '☀️ Light' : '🌙 Dark'}
-        </button>
-      </header>
-      
-      <div className="chat-window">
+    <div className="chat-app">
+      <div className="messages">
         {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.sender}`}>
-            <div className="avatar">{msg.sender === 'user' ? '🧑' : '🤖'}</div>
-            <div className="bubble">{msg.text}</div>
-          </div>
+          <div key={i} className={`message ${msg.from}`}>{msg.text}</div>
         ))}
-        {loading && (
-          <div className="message bot">
-            <div className="avatar">🤖</div>
-            <div className="bubble typing">Bot is typing<span className="dots">...</span></div>
-          </div>
-        )}
       </div>
-
       <div className="input-area">
-        <input
-          type="text"
-          placeholder="Type your question..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress}
-        />
+        <input value={input} onChange={(e) => setInput(e.target.value)} />
         <button onClick={sendMessage}>Send</button>
       </div>
     </div>

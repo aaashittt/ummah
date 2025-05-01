@@ -1,139 +1,92 @@
-/* chatApp.css */
+// chatApp.css
+body.light-mode {
+  --bg: #ffffff;
+  --text: #000000;
+  --accent: #007bff;
+}
 
-:root {
-  --user-color: #0b93f6;
-  --bot-color: #e5e5ea;
-  --background-light: #ffffff;
-  --background-dark: #1e1e1e;
-  --text-light: #000000;
-  --text-dark: #ffffff;
-  --user-avatar: url('https://cdn-icons-png.flaticon.com/512/1946/1946429.png');
-  --bot-avatar: url('https://cdn-icons-png.flaticon.com/512/4712/4712107.png');
+body.dark-mode {
+  --bg: #121212;
+  --text: #ffffff;
+  --accent: #bb86fc;
 }
 
 body {
   margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--background-light);
-  color: var(--text-light);
-  transition: background-color 0.3s, color 0.3s;
+  font-family: Arial, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
-body.dark {
-  background-color: var(--background-dark);
-  color: var(--text-dark);
-}
-
-.chat-container {
-  max-width: 700px;
-  margin: 40px auto;
-  border-radius: 10px;
-  padding: 20px;
-  background-color: #f5f5f5;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-body.dark .chat-container {
-  background-color: #2a2a2a;
-}
-
-.chat-window {
-  max-height: 500px;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  padding: 10px;
+.app {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  height: 100vh;
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+}
+
+.chat-history {
+  width: 200px;
+  border-right: 1px solid var(--accent);
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.chat-app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background: var(--bg);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  border-bottom: 1px solid var(--accent);
 }
 
 .message {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
-  max-width: 80%;
-  word-wrap: break-word;
+  max-width: 70%;
 }
 
-.user-message {
-  align-self: flex-end;
-  background-color: var(--user-color);
+.message.user {
+  background-color: var(--accent);
   color: white;
-  flex-direction: row-reverse;
+  align-self: flex-end;
 }
 
-.bot-message {
+.message.bot {
+  background-color: #2c2c2c;
+  color: white;
   align-self: flex-start;
-  background-color: var(--bot-color);
 }
 
-.avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-size: cover;
-}
-
-.user-message .avatar {
-  background-image: var(--user-avatar);
-}
-
-.bot-message .avatar {
-  background-image: var(--bot-avatar);
-}
-
-.input-container {
+.input-area {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 0.5rem;
 }
 
-input[type="text"] {
+input {
   flex: 1;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
 }
 
 button {
-  padding: 10px 16px;
-  background-color: var(--user-color);
+  background: var(--accent);
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background-color: #0079e3;
-}
-
-.toggle-darkmode {
-  display: block;
-  margin: 0 auto 10px;
-  background: transparent;
-  color: inherit;
-  border: 2px solid currentColor;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.typing-indicator {
-  font-style: italic;
-  font-size: 0.9rem;
-  color: gray;
-  margin-left: 40px;
-}
-
-.error-message {
-  color: red;
-  font-size: 0.85rem;
-  text-align: center;
-  margin-top: 5px;
 }

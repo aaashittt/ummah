@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js or main entry point
+import React, { useState, useEffect } from 'react';
+import ChatApp from './ChatApp';
+import ChatHistory from './ChatHistory';
+import ThemeToggle from './ThemeToggle';
+import './chatApp.css';
 
 function App() {
+  const [currentChatId, setCurrentChatId] = useState(null);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <ThemeToggle />
+      <div className="layout">
+        <ChatHistory onSelectConversation={setCurrentChatId} />
+        <ChatApp chatId={currentChatId} />
+      </div>
     </div>
   );
 }
