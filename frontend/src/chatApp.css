@@ -1,0 +1,17 @@
+#chat-window {
+  height: 400px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+  background: #f9f9f9;
+  font-family: Arial, sans-serif;
+}
+.user-message {
+  color: blue;
+  margin: 5px 0;
+}
+.bot-message {
+  color: green;
+  margin: 5px 0;
+}
