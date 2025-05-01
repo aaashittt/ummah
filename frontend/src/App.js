@@ -1,5 +1,4 @@
-// App.js or main entry point
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ChatApp from './ChatApp';
 import ChatHistory from './ChatHistory';
 import ThemeToggle from './ThemeToggle';
