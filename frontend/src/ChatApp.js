@@ -7,19 +7,21 @@ function ChatApp({ chatId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
 
+  // load history when chatId changes
   useEffect(() => {
-    const storedHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-    const current = storedHistory.find(chat => chat.id === chatId);
+    const stored = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    const current = stored.find(c => c.id === chatId);
     if (current) setMessages(current.messages);
+    else setMessages([]);
   }, [chatId]);
 
   const saveToHistory = (newMessages) => {
-    const heading = newMessages[0]?.text?.slice(0, 20) || 'Chat';
+    const heading = newMessages[0]?.text.slice(0, 20) || 'Chat';
     let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-    const index = history.findIndex(chat => chat.id === chatId);
+    const idx = history.findIndex(c => c.id === chatId);
 
-    if (index >= 0) {
-      history[index] = { id: chatId, heading, messages: newMessages };
+    if (idx >= 0) {
+      history[idx] = { id: chatId, heading, messages: newMessages };
     } else {
       history.push({ id: chatId || Date.now().toString(), heading, messages: newMessages });
     }
@@ -29,23 +31,24 @@ function ChatApp({ chatId }) {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const newMessages = [...messages, { from: 'user', text: input }];
-    setMessages(newMessages);
+    const userMsg = { from: 'user', text: input };
+    const newMsgs = [...messages, userMsg];
+    setMessages(newMsgs);
     setInput('');
 
     try {
-      const response = await fetch(`${backendUrl}/chat`, {
+      const res = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input }),
       });
-
-      const data = await response.json();
-      const updatedMessages = [...newMessages, { from: 'bot', text: data.reply || 'Error' }];
-      setMessages(updatedMessages);
-      saveToHistory(updatedMessages);
+      const { reply } = await res.json();
+      const botMsg = { from: 'bot', text: reply || 'Error' };
+      const updated = [...newMsgs, botMsg];
+      setMessages(updated);
+      saveToHistory(updated);
     } catch {
-      setMessages([...newMessages, { from: 'bot', text: 'Service unavailable. Please try again later.' }]);
+      setMessages([...newMsgs, { from: 'bot', text: 'Service unavailable.' }]);
     }
   };
 
@@ -53,11 +56,17 @@ function ChatApp({ chatId }) {
     <div className="chat-app">
       <div className="messages">
         {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.from}`}>{msg.text}</div>
+          <div key={i} className={`message ${msg.from}`}>
+            {msg.text}
+          </div>
         ))}
       </div>
       <div className="input-area">
-        <input value={input} onChange={(e) => setInput(e.target.value)} />
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Type your message..."
+        />
         <button onClick={sendMessage}>Send</button>
       </div>
     </div>

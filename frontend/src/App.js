@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import ChatApp from './ChatApp';
 import ChatHistory from './ChatHistory';
+import ChatApp from './ChatApp';
 import ThemeToggle from './ThemeToggle';
 import './chatApp.css';
 

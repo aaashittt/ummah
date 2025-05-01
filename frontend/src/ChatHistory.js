@@ -1,4 +1,3 @@
-// ChatHistory.js
 import React, { useState, useEffect } from 'react';
 
 function ChatHistory({ onSelectConversation }) {
