@@ -106,7 +106,8 @@ process.on('SIGINT', () => {
   process.exit();
 });
 
-app.listen(PORT, () => {
+// Critical fix: Added '0.0.0.0' for Render compatibility
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:5500'}`);
 });

@@ -19,3 +19,10 @@ Thumbs.db
 
 # Build files
 dist/
+
+# backend files
+# Add these lines
+node_modules/
+.env
+backend/node_modules/
+backend/.env
