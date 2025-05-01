@@ -3,6 +3,10 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import dns from 'node:dns';
+
+// Force IPv4 DNS resolution for Render compatibility
+dns.setDefaultResultOrder('ipv4first');
 
 // Environment configuration
 dotenv.config();
@@ -11,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 // Rate limiting configuration
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
@@ -42,11 +46,27 @@ app.use(express.json({
   }
 }));
 
-// Pre-flight handling
-app.options('/ask', cors());
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    const healthCheck = await fetch('https://api.openrouter.ai', { method: 'HEAD' });
+    res.status(healthCheck.ok ? 200 : 500).json({
+      status: healthCheck.ok ? 'healthy' : 'unhealthy',
+      openrouter: healthCheck.status
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      error: error.message
+    });
+  }
+});
 
-// Main API endpoint
+// Main API endpoint with enhanced error handling
 app.post('/ask', async (req, res) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+
   try {
     if (!req.body?.question?.trim()) {
       return res.status(400).json({ error: "Question field is required" });
@@ -54,6 +74,7 @@ app.post('/ask', async (req, res) => {
 
     const response = await fetch("https://api.openrouter.ai/v1/chat/completions", {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
@@ -67,11 +88,14 @@ app.post('/ask', async (req, res) => {
       })
     });
 
+    clearTimeout(timeout);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenRouter Error:', errorData);
-      return res.status(response.status).json({
-        error: errorData.error?.message || 'AI service unavailable'
+      const errorText = await response.text();
+      console.error('OpenRouter API Error:', errorText);
+      return res.status(502).json({ 
+        error: "AI service unavailable",
+        details: process.env.NODE_ENV === 'production' ? null : errorText
       });
     }
 
@@ -85,14 +109,25 @@ app.post('/ask', async (req, res) => {
     console.error("Unexpected Response Format:", data);
     res.status(500).json({ error: "AI service returned unexpected response" });
   } catch (error) {
+    clearTimeout(timeout);
     console.error("Server Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    
+    const errorMessage = error.name === 'AbortError' 
+      ? "Request timed out" 
+      : error.message.includes('ENOTFOUND')
+        ? "Failed to connect to AI service"
+        : "Internal server error";
+
+    res.status(500).json({ 
+      error: errorMessage,
+      ...(process.env.NODE_ENV !== 'production' && { details: error.message })
+    });
   }
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Global Error:', err.stack);
+  console.error('Global Error Handler:', err.stack);
   res.status(500).json({
     error: process.env.NODE_ENV === 'production'
       ? 'Internal server error'
@@ -106,6 +141,7 @@ app.listen(PORT, '0.0.0.0', () => {
   Server running on port: ${PORT}
   CORS Origin: ${process.env.CORS_ORIGIN || 'http://localhost:5500'}
   Environment: ${process.env.NODE_ENV || 'development'}
+  DNS Mode: ${dns.getDefaultResultOrder()}
   `);
 });
 
