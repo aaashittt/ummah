@@ -1,3 +1,4 @@
+ import './chatApp.css;'
 // ChatApp.js
 import React, { useState } from 'react';
 import './ChatApp.css';
