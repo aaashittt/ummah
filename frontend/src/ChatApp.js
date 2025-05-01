@@ -1,6 +1,6 @@
 // ChatApp.js
 import React, { useState, useEffect } from 'react';
-
+import './chatApp.css';
 const backendUrl = 'https://ummah2.onrender.com';
 
 function ChatApp({ chatId }) {
