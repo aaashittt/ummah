@@ -43,7 +43,7 @@ export default function ChatWindow({ chatId }) {
     setInput('');
 
     try {
-      const res = await fetch(`${backendUrl}/chat`, {
+      const res = await fetch(`${backendUrl}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg.text }),
