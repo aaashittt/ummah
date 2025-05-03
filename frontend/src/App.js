@@ -1,23 +1,16 @@
-// --------- src/App.js ---------
-import React, { useState } from 'react';
+// src/App.js
+import React from 'react';
 import ThemeToggle from './ThemeToggle';
-import ChatHistory from './ChatHistory';
-import ChatWindow from './ChatWindow';
+import ChatApp from './ChatApp';    // ← import your wrapper
 import './chatApp.css';
 
 function App() {
-  const [currentChatId, setCurrentChatId] = useState(null);
-
   return (
     <div className="app">
       <ThemeToggle />
-      <div className="main">
-        <ChatHistory onSelectChat={setCurrentChatId} currentChatId={currentChatId} />
-        <ChatWindow chatId={currentChatId} />
-      </div>
+      <ChatApp />                   {/* ← render only ChatApp */}
     </div>
   );
 }
 
 export default App;
-
